@@ -1,2 +1,9 @@
 Revision history for Perl extension ELFF::Parser.
 
+* 2010-03-20 Mark Warren <mwarren42@gmail.com>
+- Fixed a memory leak
+- Fixed a compiler warning
+- Release 0.91
+
+* 2007-04-01 Mark Warren <mwarren42@gmail.com>
+- Initial release

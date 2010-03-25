@@ -1,4 +1,4 @@
-ELFF-Parser version 0.01
+ELFF-Parser version 0.91
 =========================
 
 This is the README for ELFF-Parser.  Please read below for instructions
@@ -21,7 +21,7 @@ This module requires these other modules and libraries:
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2007 by Mark M. Warren <mwarren42@gmail.com>
+Copyright (C) 2007-2010 by Mark M. Warren <mwarren42@gmail.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.8 or,

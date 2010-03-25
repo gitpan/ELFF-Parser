@@ -29,7 +29,8 @@ tokenize(value)
 	SV* value
   PROTOTYPE: $
   CODE:
-	unsigned int len, l;
+	STRLEN len;
+	unsigned int l;
 	char *line, *ptr;
 	SV* field;
 
@@ -43,6 +44,7 @@ tokenize(value)
 
 	// allocate a new array
 	RETVAL = newAV();
+	sv_2mortal((SV*)RETVAL);
 
 	// trim trailing white space from the line
 	while(isspace(line[len - 1])) {
@@ -62,8 +64,6 @@ tokenize(value)
 		if(end == NULL) {
 			if(quotes == 1) {
 				// last field is missing trailing quote, malformed line
-				// TODO will perl free the values in the array or should I do it?
-				SvREFCNT_dec((SV*)RETVAL);
 				croak("malformed line, missing trailing quote");
 			}
 
