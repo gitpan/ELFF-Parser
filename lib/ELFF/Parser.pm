@@ -37,7 +37,7 @@ ELFF::Parser - parse ELFF formatted log files
          print "Log starts at $res->{value}\n";
       }
       elsif($res->{href}) {
-         print $res->{href}{rs-bytes}, "\n";
+         print $res->{href}{'rs-bytes'}, "\n";
       }
       elsif($res->{aref}) {
          print "Detected log format change, or no fields directive\n";
@@ -180,7 +180,7 @@ use 5.00;
 use strict;
 use Carp;
 
-our $VERSION = '0.91';
+our $VERSION = '0.92';
 
 
 sub new {
@@ -208,50 +208,43 @@ sub parse_line {
 
 	# if the line is a directive, handle it here
 	if($line && substr($line, 0, 1) eq '#') {
-		my @f = split(/\s+/, $line, 2);
-		$f[0] =~ s/(?:^#|:$)//g;
-		$res = {
-			'directive' => $f[0],
-			'value' => $f[1],
-		};
+		# some vendors put whitespace between # and the directive name, remove it
+		$line =~ s/^#\s+/#/;
 
-		# check for fields directive
-		if($f[0] eq 'Fields') {
-			my $fields = tokenize($f[1]);
+		@$res{('directive', 'value')} = split(/\s+/, $line, 2);
+		$res->{directive} =~ s/(?:^#|:$)//g;
 
-			# clear existing revmap
-			$self->{revmap} = {};
-
-			# build new revmap as we build the fields array for the result
-			foreach my $i (0 .. $#$fields) {
-				$self->{revmap}{$i} = $fields->[$i];
-				push(@{$res->{fields}}, $fields->[$i]);
-			}
-
-			# remember the number of fields
-			$self->{fields} = $#$fields;
+		if($res->{directive} eq 'Fields') {
+			$self->{revmap} = tokenize($res->{value});
+			$self->{fields} = $#{$self->{revmap}};
+			@{$res->{fields}} = @{$self->{revmap}};
 		}
 
 		return $res;
 	}
 
-	# otherwise, the line is a log line
+	# not a directive, regular log
+
 	my $flds = tokenize($line);
 	return undef unless $flds;
 
-	my $x = $#$flds;
-
-	# check for change in format
-	if($x != $self->{fields}) {
+	# no field names - return array
+	unless($self->{revmap}) {
 		$res->{aref} = $flds;
 		return $res;
 	}
 
-	my $i = 0;
-	while($i <= $x) {
-		$res->{href}{$self->{revmap}{$i}} = $flds->[$i];
-		$i++;
+	# change in format, invalidate fields and return array
+	if($#$flds != $self->{fields}) {
+		$self->{revmap} = undef;
+		$res->{aref} = $flds;
+		return $res;
 	}
+
+	# return href
+	my %href;
+	@href{@{$self->{revmap}}} = @$flds;
+	$res->{href} = \%href;
 
 	return $res;
 }
